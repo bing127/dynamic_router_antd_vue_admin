@@ -7,12 +7,6 @@
       :form="form"
       @submit="handleSubmit"
     >
-      <a-tabs
-        :activeKey="customActiveKey"
-        :tabBarStyle="{ textAlign: 'center', borderBottom: 'unset' }"
-        @change="handleTabClick"
-      >
-        <a-tab-pane key="tab1" tab="账号密码登录">
           <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" message="账户或密码错误（admin/ant.design )" />
           <a-form-item>
             <a-input
@@ -40,14 +34,6 @@
               <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>
             </a-input-password>
           </a-form-item>
-        </a-tab-pane>
-        <a-tab-pane key="tab2" tab="手机号登录">
-          <a-form-item>
-            <a-input size="large" type="text" placeholder="手机号" v-decorator="['mobile', {rules: [{ required: true, pattern: /^1[34578]\d{9}$/, message: '请输入正确的手机号' }], validateTrigger: 'change'}]">
-              <a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/>
-            </a-input>
-          </a-form-item>
-
           <a-row :gutter="16">
             <a-col class="gutter-row" :span="16">
               <a-form-item>
@@ -66,8 +52,6 @@
               ></a-button>
             </a-col>
           </a-row>
-        </a-tab-pane>
-      </a-tabs>
 
       <a-form-item>
         <a-checkbox v-decorator="['rememberMe', { valuePropName: 'checked' }]">自动登录</a-checkbox>
@@ -104,29 +88,17 @@
       </div>
     </a-form>
 
-    <two-step-captcha
-      v-if="requiredTwoStepCaptcha"
-      :visible="stepCaptchaVisible"
-      @success="stepCaptchaSuccess"
-      @cancel="stepCaptchaCancel"
-    ></two-step-captcha>
   </div>
 </template>
 
 <script>
-import md5 from 'md5'
-import TwoStepCaptcha from '@/components/tools/TwoStepCaptcha'
 import { mapActions } from 'vuex'
 import { timeFix } from '@/utils/util'
 import { getSmsCaptcha, get2step } from '@/api/login'
 
 export default {
-  components: {
-    TwoStepCaptcha
-  },
   data () {
     return {
-      customActiveKey: 'tab1',
       loginBtn: false,
       // login type: 0 email, 1 username, 2 telephone
       loginType: 0,
@@ -135,23 +107,12 @@ export default {
       stepCaptchaVisible: false,
       form: this.$form.createForm(this),
       state: {
-        time: 60,
-        loginBtn: false,
-        // login type: 0 email, 1 username, 2 telephone
-        loginType: 0,
-        smsSendBtn: false
+        loginBtn: false
       }
     }
   },
   created () {
-    get2step({ })
-      .then(res => {
-        this.requiredTwoStepCaptcha = res.result.stepCode
-      })
-      .catch(() => {
-        this.requiredTwoStepCaptcha = false
-      })
-    // this.requiredTwoStepCaptcha = true
+
   },
   methods: {
     ...mapActions(['Login', 'Logout']),
@@ -165,10 +126,6 @@ export default {
         state.loginType = 1
       }
       callback()
-    },
-    handleTabClick (key) {
-      this.customActiveKey = key
-      // this.form.resetFields()
     },
     handleSubmit (e) {
       e.preventDefault()
@@ -235,15 +192,6 @@ export default {
             this.requestFailed(err)
           })
         }
-      })
-    },
-    stepCaptchaSuccess () {
-      this.loginSuccess()
-    },
-    stepCaptchaCancel () {
-      this.Logout().then(() => {
-        this.loginBtn = false
-        this.stepCaptchaVisible = false
       })
     },
     loginSuccess (res) {
